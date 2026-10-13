@@ -60,6 +60,9 @@ export function AnnouncementBar() {
       <span className="font-bold">Special Offer:</span> {PRODUCT_NAME} for{' '}
       <span style={{ color: C.gold }}>{PRICE}</span>
     </>,
+    <>
+      Price Increases To <span style={{ color: C.gold }}>{STRIKE_PRICE}</span> Tomorrow
+    </>,
     <>100% Money-Back Guarantee</>,
     <>
       Live · Starts {START_DATE} · {SESSION_TIMES}

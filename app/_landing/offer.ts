@@ -14,7 +14,8 @@ export const PRICE_RUPEES = Number.isFinite(RAW_PRICE) && RAW_PRICE > 0 ? RAW_PR
 export const PRICE_PAISE = PRICE_RUPEES * 100;
 export const PRICE = `₹${PRICE_RUPEES.toLocaleString('en-IN')}`;
 
-/* The checkout strikes this through against PRICE. */
+/* The price the announcement bar says it rises to, struck through against
+   PRICE on the hero card and the checkout. */
 export const STRIKE_PRICE_RUPEES = 1799;
 export const STRIKE_PRICE = `₹${STRIKE_PRICE_RUPEES.toLocaleString('en-IN')}`;
 /* Rounded down, so the label never claims more off than ₹1799 → PRICE gives. */
