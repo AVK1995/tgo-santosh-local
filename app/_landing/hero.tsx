@@ -37,11 +37,11 @@ import {
   CTA_LABEL_STICKY,
   CTA_NOTE,
   PRICE,
-  PRICE_RISES_TO,
   PRODUCT_NAME,
   RECOGNITION_YEAR,
   SESSION_TIMES,
   START_DATE,
+  STRIKE_PRICE,
   STUDENTS_TRAINED,
   YEARS_IN_FIELD,
 } from './offer';
@@ -53,21 +53,12 @@ import { Art, C, MediaPlaceholder } from './shared';
    specific anchor and a specific date, never "limited time".
 
    Dark oxblood rail so it pulls the eye above the light stage. Price tokens
-   are saffron (7.2:1 on oxblood).
-
-   ⚠️ FLAG FOR ATUL: "Price Increases To ₹1799 Tomorrow" is rendered verbatim
-   from the copy. On an evergreen page "Tomorrow" stops being true the day
-   after launch. Either the campaign carries a real dated deadline, or that
-   segment needs re-wording by NO-BRAINER. Not silently changed here. */
+   are saffron (7.2:1 on oxblood). */
 export function AnnouncementBar() {
   const segments = [
     <>
       <span className="font-bold">Special Offer:</span> {PRODUCT_NAME} for{' '}
       <span style={{ color: C.gold }}>{PRICE}</span>
-    </>,
-    <>
-      Price Increases To{' '}
-      <span style={{ color: C.gold }}>{PRICE_RISES_TO}</span> Tomorrow
     </>,
     <>100% Money-Back Guarantee</>,
     <>
@@ -382,6 +373,12 @@ export function Hero() {
                 className="mt-6 flex items-baseline justify-center gap-3 border-t pt-6 lg:justify-start"
                 style={{ borderColor: C.line }}
               >
+                <s
+                  className="font-display text-[26px] font-semibold leading-none tabular-nums decoration-2"
+                  style={{ color: C.inkSoft }}
+                >
+                  {STRIKE_PRICE}
+                </s>
                 <span className="kz-lit font-display text-[53px] font-semibold leading-none">
                   {PRICE}
                 </span>

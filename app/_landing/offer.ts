@@ -14,10 +14,17 @@ export const PRICE_RUPEES = Number.isFinite(RAW_PRICE) && RAW_PRICE > 0 ? RAW_PR
 export const PRICE_PAISE = PRICE_RUPEES * 100;
 export const PRICE = `₹${PRICE_RUPEES.toLocaleString('en-IN')}`;
 
-/** The anchor the announcement bar names. Rising, per the source copy. */
-export const PRICE_RISES_TO = '₹1799';
+/* The checkout strikes this through against PRICE. */
+export const STRIKE_PRICE_RUPEES = 1799;
+export const STRIKE_PRICE = `₹${STRIKE_PRICE_RUPEES.toLocaleString('en-IN')}`;
+/* Rounded down, so the label never claims more off than ₹1799 → PRICE gives. */
+export const DISCOUNT_PCT = Math.floor(
+  ((STRIKE_PRICE_RUPEES - PRICE_RUPEES) / STRIKE_PRICE_RUPEES) * 100,
+);
 
 export const START_DATE = '21st October';
+/* The first session (6 AM IST on the start date). Drives the checkout countdown. */
+export const START_AT = '2026-10-21T06:00:00+05:30';
 export const SESSION_TIMES = '6AM & 7PM';
 
 export const PRODUCT_NAME = '5-Day Music Therapy Practitioner Challenge';
@@ -49,9 +56,9 @@ export const WHATSAPP_INVITE = process.env.NEXT_PUBLIC_WHATSAPP_INVITE ?? '';
  *  bar, points here. */
 export const CHECKOUT_HREF = '/checkout';
 
-/** The CTA label and its reassurance line, as written in the source copy. */
-export const CTA_LABEL = `Start Your 5-Day Music Therapy Challenge · ${PRICE}`;
+/** The CTA label and its reassurance line. */
+export const CTA_LABEL = `Start Your 5-Day Music Therapy Challenge · ${DISCOUNT_PCT}% Off Today`;
 export const CTA_NOTE = 'Join Risk-Free · 100% Money-Back Guarantee';
 /** The sticky offer card and the Option 2 card carry their own labels. */
 export const CTA_LABEL_STICKY = 'Reserve My Spot';
-export const CTA_LABEL_OPTION = `Take Action · ${PRICE}`;
+export const CTA_LABEL_OPTION = `Take Action · ${DISCOUNT_PCT}% Off Today`;
