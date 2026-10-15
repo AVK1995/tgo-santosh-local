@@ -14,6 +14,18 @@ export const PRICE_RUPEES = Number.isFinite(RAW_PRICE) && RAW_PRICE > 0 ? RAW_PR
 export const PRICE_PAISE = PRICE_RUPEES * 100;
 export const PRICE = `₹${PRICE_RUPEES.toLocaleString('en-IN')}`;
 
+/* ── The two checkout add-ons (order bumps) ───────────────────────────────
+   Same guard as the base price: a blank env key must fall back, never charge
+   ₹0. Read with the literal `process.env.NEXT_PUBLIC_…` so Next inlines them
+   into the browser bundle. The catalogue (names, copy, package codes) lives in
+   app/checkout/addons.ts; only the numbers live here, beside the base price. */
+const priceOr = (raw: string | undefined, fallback: number) => {
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+};
+export const RECORDING_PRICE_RUPEES = priceOr(process.env.NEXT_PUBLIC_ADDON_RECORDING_RUPEES, 500);
+export const PRIVATE_CALL_PRICE_RUPEES = priceOr(process.env.NEXT_PUBLIC_ADDON_CALL_RUPEES, 1500);
+
 /* The price the announcement bar says it rises to, struck through against
    PRICE on the hero card and the checkout. */
 export const STRIKE_PRICE_RUPEES = 1799;
@@ -52,6 +64,21 @@ export const RECOGNITION_YEAR = 'SiliconIndia 2026';
  * ⚠️ REQUIRED BEFORE LAUNCH. Create the group, take the invite link.
  */
 export const WHATSAPP_INVITE = process.env.NEXT_PUBLIC_WHATSAPP_INVITE ?? '';
+
+/**
+ * The SEPARATE WhatsApp group the session recordings are shared in, joined
+ * only by buyers of the recordings add-on (/thank-you/recordings and
+ * /thank-you/complete). ⚠️ REQUIRED BEFORE LAUNCH if the add-on is on sale.
+ */
+export const WHATSAPP_RECORDINGS_INVITE = process.env.NEXT_PUBLIC_WHATSAPP_RECORDINGS_INVITE ?? '';
+
+/**
+ * The calendar link where a private-call buyer picks their slot (Calendly,
+ * Google appointment schedule, etc.). Opens in a new tab from
+ * /thank-you/private-call and /thank-you/complete.
+ * ⚠️ REQUIRED BEFORE LAUNCH if the add-on is on sale.
+ */
+export const CALL_BOOKING_URL = process.env.NEXT_PUBLIC_CALL_BOOKING_URL ?? '';
 
 /** The next click is a payment. Every CTA on the page, including the docked
  *  bar, points here. */

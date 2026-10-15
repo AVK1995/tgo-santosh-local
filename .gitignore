@@ -7,3 +7,6 @@ out
 .env*.local
 .DS_Store
 *.tsbuildinfo
+
+# Private: confirmation email / WhatsApp drafts, kept locally only
+confirmation-messages/

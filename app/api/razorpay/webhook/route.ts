@@ -7,7 +7,7 @@ import { ga4ServerReady, sendGa4Purchase } from '@/lib/ga4-server';
 import { sendCapiEvent, type Occupation } from '@/lib/meta-capi';
 import { readOrderContext } from '@/lib/order-notes';
 import { pabblyReady, sendPabblyPurchase } from '@/lib/pabbly';
-import { GA4_ITEM_ID } from '@/app/_landing/offer';
+import { ga4ItemsOf, packageOf, parseAddons } from '@/app/checkout/addons';
 
 /**
  * Razorpay webhook, and the ONLY place a Purchase is reported.
@@ -110,7 +110,22 @@ export async function POST(req: Request) {
     ? new Date(capturedAt * 1000).toISOString()
     : new Date().toISOString();
 
-  const valueRupees = amountRupees || CHECKOUT_CONFIG.amountRupees;
+  /* ── WHAT WAS BOUGHT (2026-10-15) ──────────────────────────────────────
+     The base challenge plus any order bumps, rebuilt from the `addons` note
+     create-order wrote. An order made before the add-ons shipped carries no
+     such note and resolves to the plain base package, which is exactly what
+     it was. */
+  const pkg = packageOf(parseAddons(notes.addons));
+
+  /* The amount Razorpay CAPTURED is the truth for revenue. A mismatch with the
+     package total means a price changed between order and payment (or the
+     notes were edited): report the real money, and say so in the log. */
+  const valueRupees = amountRupees || pkg.totalRupees;
+  if (amountRupees && amountRupees !== pkg.totalRupees) {
+    console.warn(
+      `[rzp-webhook] ${String(payment.id ?? '')} paid ₹${amountRupees} but package ${pkg.code} totals ₹${pkg.totalRupees}`,
+    );
+  }
 
   /* Everything the browser knew, written into the order at create time and
      unpacked here. This is the ONLY route back to the buyer's own IP, user
@@ -146,8 +161,7 @@ export async function POST(req: Request) {
         transactionId: paymentId,
         valueRupees,
         currency: CHECKOUT_CONFIG.currency,
-        itemId: GA4_ITEM_ID,
-        itemName: CHECKOUT_CONFIG.contentName,
+        items: ga4ItemsOf(pkg),
       })
     : { ok: false, status: 0 };
 
@@ -189,8 +203,8 @@ export async function POST(req: Request) {
         paymentId,
         orderId,
         currency: CHECKOUT_CONFIG.currency,
-        product: CHECKOUT_CONFIG.contentName,
         occupation: ctx.occupation,
+        pkg,
       })
     : { ok: false, status: 0 };
 
@@ -248,7 +262,7 @@ export async function POST(req: Request) {
      silently stopped arriving would otherwise show up as nothing worse than a
      slowly falling match quality. */
   console.log(
-    `[rzp-webhook] ${paymentId} Purchase capi=${result.ok} ga4=${ga4.ok} ` +
+    `[rzp-webhook] ${paymentId} Purchase package=${pkg.code} value=${valueRupees} capi=${result.ok} ga4=${ga4.ok} ` +
       /* The health check moved off createdAt, which now comes from Razorpay
          and is therefore always present: it could no longer tell us whether
          the NOTES unpacked, which is the thing worth watching. landingUrl is

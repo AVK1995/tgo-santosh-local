@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { ATTR_COOKIE, packJsonNote, readAttrCookie } from '@/lib/attribution-edge';
 import { CHECKOUT_CONFIG, isTestMode } from '@/lib/checkout-config';
 import { readClientIp, readClientUserAgent, readRequestCookie } from '@/lib/request-signals';
+import { packageOf, parseAddons } from '@/app/checkout/addons';
 
 /**
  * Creates the Razorpay order the browser then pays.
@@ -67,6 +68,11 @@ export async function POST(req: Request) {
 
   const utm = (body.utm ?? {}) as Record<string, string | undefined>;
 
+  /* The add-ons ticked at the checkout. Only the IDS come from the browser;
+     the amount is recomputed from app/checkout/addons.ts, so a tampered body
+     can pick add-ons but never a price. */
+  const pkg = packageOf(parseAddons(body.addons));
+
   /* Identity for the fulfilment record. Minted HERE, before payment, so a
      lead can be tracked from the moment the form is submitted rather than
      only once money lands.
@@ -128,7 +134,8 @@ export async function POST(req: Request) {
      and `packJsonNote` keeps each one valid by shortening its LONGEST value
      until it fits, never by cutting the finished JSON.
 
-     FOURTEEN KEYS against Razorpay's limit of fifteen, so there is one spare.
+     FIFTEEN KEYS, Razorpay's exact limit: `addons` (2026-10-15) took the one
+     spare. Adding another key now means folding something into a bundle.
      Ported from ResetByShruti, whose data has been clean on this shape. */
   const notes: Record<string, string> = {
     /* One constant, shared with the webhook that checks it. See the note on
@@ -214,12 +221,16 @@ export async function POST(req: Request) {
     clid: fbclid,
     ref: referrer,
     lp: landingUrl,
+    /* Which order bumps were bought: "recording", "private_call",
+       "recording,private_call" or ''. The webhook rebuilds the whole package
+       (code, name, amounts) from this one key. */
+    addons: pkg.addonIds.join(','),
   };
 
   /* A REJECTED ORDER IS AN UNPAID BUYER, so both of Razorpay's limits are
      asserted rather than assumed, and both are repaired rather than merely
-     logged. Fourteen keys are written above, so the key cap only trips if
-     someone adds two more; the length cap can trip on a single long campaign
+     logged. Fifteen keys are written above, so the key cap trips the moment
+     anyone adds one more; the length cap can trip on a single long campaign
      url, and dropping a Razorpay order over one note value would cost a sale.
 
      packJsonNote already guarantees the two bundles fit. This is the guard for
@@ -243,7 +254,7 @@ export async function POST(req: Request) {
         authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}`,
       },
       body: JSON.stringify({
-        amount: CHECKOUT_CONFIG.amountPaise,
+        amount: pkg.totalPaise,
         currency: CHECKOUT_CONFIG.currency,
         /* THIS CLIENT'S prefix, not the `kz_` one the scaffold was copied from.
            It is what a receipt is searched by in the Razorpay dashboard, so a
@@ -288,6 +299,7 @@ export async function POST(req: Request) {
       leadId,
       isTest: isTestMode(),
       orderId: order.id,
+      package: pkg.code,
       amount: order.amount,
       currency: order.currency,
       keyId, // publishable by design: the browser needs it to open the sheet
