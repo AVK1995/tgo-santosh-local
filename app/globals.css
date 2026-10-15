@@ -891,3 +891,62 @@ body {
   text-underline-offset: 2px;
 }
 .legal-content strong { font-weight: 600; color: #304443; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+ *  CHECKOUT ADD-ONS (order bumps). Attention lives only on what can be
+ *  tapped (C7): an UNticked add-on breathes a ring in its own tone, a ticked
+ *  one goes still, so the pulse always reads as "this is still on offer".
+ *  Tone comes from --addon-ring (rgba) set inline per card: saffron for the
+ *  recordings, violet for the private call. The global reduced-motion rule
+ *  above stops every loop here.
+ * ═══════════════════════════════════════════════════════════════════════ */
+@keyframes addon-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent, 0 12px 28px -22px rgba(48, 68, 67, 0.45); }
+  50% { box-shadow: 0 0 0 5px var(--addon-ring, rgba(253, 147, 9, 0.2)), 0 12px 28px -22px rgba(48, 68, 67, 0.45); }
+}
+.addon-card {
+  transition:
+    transform 0.26s cubic-bezier(0.34, 1.45, 0.64, 1),
+    background-color 0.22s ease,
+    border-color 0.22s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.addon-card[aria-checked='false'] { animation: addon-pulse 2.4s ease-in-out infinite; }
+.addon-card:active { transform: scale(0.985); transition-duration: 0.08s; }
+@media (hover: hover) {
+  .addon-card:hover { transform: translate3d(0, -2px, 0); }
+  .addon-card[aria-checked='false']:hover { animation-play-state: paused; }
+}
+.addon-card:focus-visible { outline: 2px solid #4a0008; outline-offset: 3px; }
+
+/* The tick lands with a small overshoot, the confirmation that it took. */
+@keyframes addon-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.addon-tick { animation: addon-pop 0.36s cubic-bezier(0.34, 1.6, 0.64, 1) both; }
+
+/* The pointing hand beside "Tap to add": a nudge toward the card, then rest. */
+@keyframes addon-nudge {
+  0%, 55%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  20% { transform: translate3d(3px, -2px, 0) rotate(-10deg); }
+  38% { transform: translate3d(-1px, 0, 0) rotate(4deg); }
+}
+.addon-nudge { display: inline-block; animation: addon-nudge 1.6s ease-in-out infinite; }
+
+/* The total re-pops whenever it changes (the element is re-keyed on the
+   amount, which restarts this one-shot animation). */
+@keyframes total-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.total-bump { display: inline-block; animation: total-bump 0.42s cubic-bezier(0.34, 1.6, 0.64, 1); }
+
+/* An add-on line arriving in the order summary. */
+@keyframes addon-line-in {
+  0% { opacity: 0; transform: translate3d(0, -6px, 0); }
+  100% { opacity: 1; transform: none; }
+}
+.addon-line-in { animation: addon-line-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }

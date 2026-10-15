@@ -24,8 +24,8 @@ export async function sendGa4Purchase(params: {
   transactionId: string;
   valueRupees: number;
   currency: string;
-  itemId: string;
-  itemName: string;
+  /** One line per thing bought: the base challenge, then each add-on. */
+  items: { item_id: string; item_name: string; price: number; quantity: number }[];
 }): Promise<{ ok: boolean; status: number }> {
   const measurementId = process.env.NEXT_PUBLIC_GA4_ID ?? '';
   const apiSecret = process.env.GA4_API_SECRET ?? '';
@@ -44,14 +44,7 @@ export async function sendGa4Purchase(params: {
           transaction_id: params.transactionId,
           value: params.valueRupees,
           currency: params.currency,
-          items: [
-            {
-              item_id: params.itemId,
-              item_name: params.itemName,
-              price: params.valueRupees,
-              quantity: 1,
-            },
-          ],
+          items: params.items,
         },
       },
     ],

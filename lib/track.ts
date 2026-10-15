@@ -1,6 +1,7 @@
 'use client';
 
 import { GA4_ITEM_ID, PRICE_RUPEES, PRODUCT_NAME } from '@/app/_landing/offer';
+import { ga4ItemsOf, packageOf, type AddonId } from '@/app/checkout/addons';
 import { collectSignals } from '@/lib/client-signals';
 import type { SendableEvent } from '@/lib/meta-capi';
 import {
@@ -54,13 +55,14 @@ type Person = {
  * reads when it classifies a dataset. Typed, the mistake does not compile, and
  * adding a name is a review rather than an edit.
  */
-function capi(eventName: SendableEvent, person: Person = {}) {
+function capi(eventName: SendableEvent, person: Person = {}, addons: AddonId[] = []) {
   const s = collectSignals();
   try {
     void fetch('/api/meta/event', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ eventName, ...s, ...person }),
+      /* Add-on IDS only: the route recomputes the value from them. */
+      body: JSON.stringify({ eventName, ...s, ...person, addons }),
       keepalive: true, // survives the navigation a CTA click causes
     });
   } catch {
@@ -101,8 +103,8 @@ export function trackBeginCheckout() {
  * /thank-you a moment later, which the call survives because capi() posts with
  * keepalive: true.
  */
-export function trackInitiateCheckout(person: Person) {
-  capi('InitiateCheckout', person);
+export function trackInitiateCheckout(person: Person, addons: AddonId[] = []) {
+  capi('InitiateCheckout', person, addons);
 
   /* QualifiedLead, for working professionals only, at the same instant.
      Not a new funnel stage: InitiateCheckout already marks this moment, but
@@ -124,19 +126,40 @@ export function trackInitiateCheckout(person: Person) {
     capi('QualifiedLead', person);
   }
 
-  ga4AddPaymentInfo({ value: VALUE, currency: 'INR' });
+  const pkg = packageOf(addons);
+  ga4AddPaymentInfo({ value: pkg.totalRupees, currency: 'INR', items: ga4ItemsOf(pkg) });
+}
+
+/**
+ * GA4 only: an order bump was ticked at the checkout. Meta gets nothing here;
+ * the add-on reaches Meta as value on InitiateCheckout and on the Purchase.
+ */
+export function trackAddonAdded(id: AddonId) {
+  const addon = packageOf([id]).addons[0];
+  if (!addon) return;
+  ga4AddToCart({
+    value: addon.priceRupees,
+    currency: 'INR',
+    items: [{ item_id: addon.ga4ItemId, item_name: addon.name, price: addon.priceRupees, quantity: 1 }],
+  });
 }
 
 /**
  * GA4 only. Meta's Purchase comes from the Razorpay webhook, where the payment
  * is proven, firing it here as well would double-count every sale.
  */
-export function trackPurchase(transactionId: string) {
+export function trackPurchase(transactionId: string, addons: AddonId[] = []) {
+  const pkg = packageOf(addons);
   /* Keyed on the payment id, not a fixed string: a refresh, a back-forward, or
      the buyer reopening the confirmation link must not count the sale twice,
      but a genuine second purchase later must still count. Without this GA4
      revenue inflates every time someone reloads the page. */
   once(`purchase_${transactionId}`, () => {
-    ga4Purchase({ transactionId, ...money });
+    ga4Purchase({
+      transactionId,
+      value: pkg.totalRupees,
+      currency: 'INR',
+      items: ga4ItemsOf(pkg),
+    });
   });
 }

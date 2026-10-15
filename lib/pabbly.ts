@@ -24,6 +24,15 @@
  * what makes it possible to rebuild, replay or reconcile a Meta event later
  * from the sheet, without which a mis-sent conversion is unrecoverable.
  */
+import type { Package } from '@/app/checkout/addons';
+import {
+  CALL_BOOKING_URL,
+  SESSION_TIMES,
+  START_DATE,
+  WHATSAPP_INVITE,
+  WHATSAPP_RECORDINGS_INVITE,
+} from '@/app/_landing/offer';
+
 export const pabblyReady = () => Boolean(process.env.PABBLY_WEBHOOK_URL);
 
 export type PabblyPurchase = {
@@ -59,8 +68,9 @@ export type PabblyPurchase = {
   paymentId: string;
   orderId: string;
   currency: string;
-  product: string;
   occupation: string;
+  /** What was bought: the base challenge plus any add-ons. */
+  pkg: Package;
 };
 
 /* Every key is emitted on every call, empty string where unknown. Pabbly
@@ -130,8 +140,47 @@ export async function sendPabblyPurchase(
         order_id: s(p.orderId),
         name: `${s(p.firstName)} ${s(p.lastName)}`.trim(),
         currency: s(p.currency),
-        product: s(p.product),
         occupation: s(p.occupation),
+
+        /* ── WHAT WAS BOUGHT (2026-10-15) ───────────────────────────────
+           `package` is the one field a Pabbly router should branch on, one
+           of exactly four values:
+             base | base_recording | base_private_call |
+             base_recording_private_call
+           `product` is the full name of that package (base name, then each
+           add-on joined by " + "), so a plain base sale still reads exactly
+           as it did before add-ons existed. `amount` above is the total
+           Razorpay captured; the per-line amounts below are 0 when that
+           line was not bought, never blank, so a sheet column sums cleanly. */
+        package: p.pkg.code,
+        product: p.pkg.name,
+        base_product: p.pkg.baseName,
+        base_amount: p.pkg.baseRupees,
+        addons: p.pkg.addonIds.join(','),
+        addon_names: p.pkg.addons.map((a) => a.name).join(' + '),
+        addons_amount: p.pkg.addonsRupees,
+        has_recording: p.pkg.addonIds.includes('recording'),
+        recording_amount:
+          p.pkg.addons.find((a) => a.id === 'recording')?.priceRupees ?? 0,
+        has_private_call: p.pkg.addonIds.includes('private_call'),
+        private_call_amount:
+          p.pkg.addons.find((a) => a.id === 'private_call')?.priceRupees ?? 0,
+
+        /* ── FOR THE CONFIRMATION MESSAGES (2026-10-15) ──────────────────
+           Named exactly as the variables in the email / WhatsApp templates,
+           so each maps one-to-one in Pabbly. `addon_amount` is the sum of
+           the add-ons bought, `total_amount` the same captured total as
+           `amount`. The two add-on links are filled ONLY when that add-on
+           was bought and are '' otherwise, so a template can never hand a
+           buyer the recordings group or the private booking link they did
+           not pay for. */
+        total_amount: p.amountRupees,
+        addon_amount: p.pkg.addonsRupees,
+        challenge_date: START_DATE,
+        challenge_time: SESSION_TIMES,
+        wa_group_base: WHATSAPP_INVITE,
+        wa_group_recordings: p.pkg.addonIds.includes('recording') ? WHATSAPP_RECORDINGS_INVITE : '',
+        call_booking_url: p.pkg.addonIds.includes('private_call') ? CALL_BOOKING_URL : '',
   };
 
   /* Full payload, unhashed, exactly as posted. The webhook url itself is not

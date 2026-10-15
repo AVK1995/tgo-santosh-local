@@ -8,6 +8,7 @@ import {
   type SendableEvent,
 } from '@/lib/meta-capi';
 import { readClientIp, readClientUserAgent } from '@/lib/request-signals';
+import { packageOf, parseAddons } from '@/app/checkout/addons';
 
 /**
  * One route for the four pre-payment events: ViewContent, AddToCart,
@@ -117,7 +118,10 @@ export async function POST(req: Request) {
       clientIp: readClientIp(req) || undefined,
       clientUserAgent: readClientUserAgent(req) || undefined,
     },
-    valueRupees: CHECKOUT_CONFIG.amountRupees,
+    /* The cart total once add-ons are ticked (InitiateCheckout carries the
+       ids), the base price otherwise. Recomputed here from the ids, never
+       taken as a number from the browser. */
+    valueRupees: packageOf(parseAddons(body.addons)).totalRupees,
     currency: CHECKOUT_CONFIG.currency,
     /* Only ever set on the two events fired from the checkout form; the
        landing-page events have no answer to send. */

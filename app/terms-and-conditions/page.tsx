@@ -43,8 +43,10 @@ export default function TermsPage() {
       <h2>3. Sessions and scheduling</h2>
       <ul>
         <li>
-          Sessions run live at the advertised times. Where a recording is made
-          available, it is a courtesy and not a guaranteed part of the programme.
+          Sessions run live at the advertised times. Session recordings are not
+          included in the challenge fee; they are available only as a separately
+          paid add-on chosen at checkout, and are shared on Day 5, after the
+          final live class.
         </li>
         <li>
           We may move a session for reasons outside our control. Registered
