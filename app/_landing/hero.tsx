@@ -171,7 +171,7 @@ export function Hero() {
                 saffron hairline so it reads as a pill rather than as a block
                 of shaded text. */}
             <span
-              className="inline-flex max-w-[560px] items-start gap-2.5 rounded-3xl px-4 py-2.5 text-left text-[11px] font-bold uppercase leading-[1.5] tracking-[0.12em]"
+              className="inline-flex max-w-[560px] items-center gap-2.5 rounded-3xl px-4 py-2.5 text-left text-[11px] font-bold uppercase leading-[1.5] tracking-[0.12em]"
               style={{
                 background: C.goldPale,
                 border: `1px solid ${C.goldMid}`,
@@ -179,14 +179,13 @@ export function Hero() {
               }}
             >
               <span
-                className="lego-pulse-dot mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full"
+                className="lego-pulse-dot inline-block h-2 w-2 shrink-0 rounded-full"
                 style={{
                   background: C.coral,
                   ['--dot-pulse' as string]: 'rgba(253,147,9,0.6)',
                 }}
               />
-              For Music Lovers Who Want To Turn Their Passion Into A Practical
-              Skill, Additional Income or A New Sense Of Purpose
+              Love Music? Turn Your Passion Into Profits &amp; Purpose.
             </span>
 
             {/* ONE lit token in the headline, the same .kz-accent every
@@ -248,11 +247,11 @@ export function Hero() {
               className="mx-auto mt-6 max-w-[600px] text-[16px] leading-[1.7] lg:mx-0"
               style={{ color: C.inkSoft }}
             >
-              A live, expert-led, 5-day music therapy challenge that combines
-              music-and-brain science, guided therapeutic activities, real-life
-              applications and personalised plan-building to help you practically
-              apply music therapy and start building the foundation of your own
-              practice. Starts {START_DATE}, live on Zoom.
+              Across 5 live sessions, you&rsquo;ll understand how music therapy
+              works, practise real applications and learn how personalised plans
+              are built, so you can start turning your love for music into a
+              skill you can eventually practise and earn from. Starts{' '}
+              {START_DATE}, live on Zoom.
             </p>
 
             <div className="mt-9 flex justify-center lg:justify-start">

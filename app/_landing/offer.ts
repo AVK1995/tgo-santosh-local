@@ -35,9 +35,18 @@ export const DISCOUNT_PCT = Math.floor(
   ((STRIKE_PRICE_RUPEES - PRICE_RUPEES) / STRIKE_PRICE_RUPEES) * 100,
 );
 
-export const START_DATE = '21st October';
-/* The first session (6 AM IST on the start date). Drives the checkout countdown. */
-export const START_AT = '2026-10-21T06:00:00+05:30';
+/* The start date as written in copy ("21st October"). From env so a new
+   cohort is one edit in .env.local, and every "Starts …" line (hero,
+   announcement bar, checkout, thank-you pages, the Pabbly challenge_date)
+   moves together. Blank falls back, never renders an empty date. */
+export const START_DATE = process.env.NEXT_PUBLIC_START_DATE?.trim() || '21st October';
+/* The first session (6 AM IST on the start date), as an ISO timestamp. Drives
+   the countdowns. Change it TOGETHER with NEXT_PUBLIC_START_DATE. An unparseable
+   value falls back rather than rendering a NaN countdown. */
+const RAW_START_AT = process.env.NEXT_PUBLIC_START_AT?.trim() ?? '';
+export const START_AT = RAW_START_AT && !Number.isNaN(Date.parse(RAW_START_AT))
+  ? RAW_START_AT
+  : '2026-10-21T06:00:00+05:30';
 export const SESSION_TIMES = '6AM & 7PM';
 
 export const PRODUCT_NAME = '5-Day Music Therapy Practitioner Challenge';

@@ -13,13 +13,13 @@ Special Offer: 5-Day Music Therapy Practitioner Challenge for ₹497 | Price Inc
 
 ## HERO
 
-For Music Lovers Who Want To Turn Their Passion Into A Practical Skill, Additional Income or A New Sense Of Purpose
+Love Music? Turn Your Passion Into Profits & Purpose.
 
 Build A Practical Music Therapy Skill
 
 In Just 5 Days, Even If You've Never Studied Psychology, Medicine Or Music Professionally
 
-A live, expert-led, 5-day music therapy challenge that combines music-and-brain science, guided therapeutic activities, real-life applications and personalised plan-building to help you practically apply music therapy and start building the foundation of your own practice. Starts 21st October, live on Zoom.
+Across 5 live sessions, you'll understand how music therapy works, practise real applications and learn how personalised plans are built, so you can start turning your love for music into a skill you can eventually practise and earn from. Starts 21st October, live on Zoom.
 
 Start Your 5-Day Music Therapy Challenge · ₹497
 Join Risk-Free · 100% Money-Back Guarantee
